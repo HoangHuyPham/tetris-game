@@ -1,0 +1,72 @@
+@charset "UTF-8";
+body {
+  padding: 10px;
+  background-color: #343434;
+}
+
+/*
+*  Đoạn css block này là animation cho background(động)
+*/
+.block {
+  position: fixed;
+  left: -200px;
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(0deg, rgb(189, 192, 209), rgb(66, 64, 64)) no-repeat;
+  animation: bg-animate 3s infinite ease-in-out;
+  z-index: -1;
+}
+
+.block1, .block4 {
+  top: 20px;
+}
+
+.block2, .block5 {
+  top: 220px;
+}
+
+.block3, .block6 {
+  top: 420px;
+}
+
+.block1 {
+  animation-delay: 1s;
+}
+
+.block2 {
+  animation-delay: 1.5s;
+}
+
+.block3 {
+  animation-delay: 2s;
+}
+
+.block4 {
+  animation-delay: 2.5s;
+}
+
+.block5 {
+  animation-delay: 3s;
+}
+
+.block6 {
+  animation-delay: 3.5s;
+}
+
+.game-wrapper {
+  background-color: rgb(43, 43, 43);
+  width: 620px;
+  height: 480px;
+  margin: 0 auto;
+}
+
+@keyframes bg-animate {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
+    transform: translateX(calc(100vw + 200px)) rotate(720deg);
+  }
+}
+
+/*# sourceMappingURL=style.css.map */
