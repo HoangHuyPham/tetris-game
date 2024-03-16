@@ -1,4 +1,6 @@
-$background-game: rgb(43, 43, 43);
+$background-gamescreen: rgb(43, 43, 43);
+$background-gamepanel: rgb(78, 43, 91);
+$menu-color: black;
 $width: 620px;
 $height: 480px;
 
@@ -8,12 +10,11 @@ $block-height: 150px;
 body{
     padding: 10px;
     background-color: #343434;
+    font-family: Tahoma, sans-serif;
 }
 
 
-/*
-*  Đoạn css block này là animation cho background(động)
-*/
+/*Đoạn css block này là animation cho background(động)*/
 .block{
     position: fixed;
     left: -200px;
@@ -52,13 +53,61 @@ body{
 .block6{
     animation-delay: 3.5s;
 }
+/*Kết thúc đoạn*/
 
 .game-wrapper{
-    background-color: $background-game;
+    display: flex;
     width: $width;
     height: $height;
     margin: 0 auto;
+    
+    &__game-screen{
+        background-color: $background-gamescreen;
+        width: 70%;
+        height: 100%;
+        &__game-menu{
+            width: 50%;
+            height: 50%;
+            border-radius: 10px;
+            background-color: $menu-color;
+            &__title{
+                font-size: 50px;
+                color: white;
+                text-align: center;
+                display: flex;
+                column-gap: 5px;
+                justify-content: center;
+            }
+        }
+    }
+    
+    &__game-panel{
+        background-color: $background-gamepanel;
+        width: 30%;
+        height: 100%;
+    }
 }
+
+
+.magenta-color{
+    color: magenta;
+}
+.orange-color{
+    color: orange;
+}
+.red-color{
+    color: red;
+}
+.yellow-color{
+    color: yellow;
+}
+.green-color{
+    color: lightgreen;
+}
+.aqua-color{
+    color: aqua;
+}
+
 
 @keyframes bg-animate {
     0%{

@@ -2,11 +2,10 @@
 body {
   padding: 10px;
   background-color: #343434;
+  font-family: Tahoma, sans-serif;
 }
 
-/*
-*  Đoạn css block này là animation cho background(động)
-*/
+/*Đoạn css block này là animation cho background(động)*/
 .block {
   position: fixed;
   left: -200px;
@@ -53,11 +52,60 @@ body {
   animation-delay: 3.5s;
 }
 
+/*Kết thúc đoạn*/
 .game-wrapper {
-  background-color: rgb(43, 43, 43);
+  display: flex;
   width: 620px;
   height: 480px;
   margin: 0 auto;
+}
+.game-wrapper__game-screen {
+  background-color: rgb(43, 43, 43);
+  width: 70%;
+  height: 100%;
+}
+.game-wrapper__game-screen__game-menu {
+  width: 50%;
+  height: 50%;
+  border-radius: 10px;
+  background-color: black;
+}
+.game-wrapper__game-screen__game-menu__title {
+  font-size: 50px;
+  color: white;
+  text-align: center;
+  display: flex;
+  column-gap: 5px;
+  justify-content: center;
+}
+.game-wrapper__game-panel {
+  background-color: rgb(78, 43, 91);
+  width: 30%;
+  height: 100%;
+}
+
+.magenta-color {
+  color: magenta;
+}
+
+.orange-color {
+  color: orange;
+}
+
+.red-color {
+  color: red;
+}
+
+.yellow-color {
+  color: yellow;
+}
+
+.green-color {
+  color: lightgreen;
+}
+
+.aqua-color {
+  color: aqua;
 }
 
 @keyframes bg-animate {
