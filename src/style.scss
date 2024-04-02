@@ -65,6 +65,9 @@ body{
         background-color: $background-gamescreen;
         width: 70%;
         height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         &__game-menu{
             width: 50%;
             height: 50%;
@@ -78,7 +81,27 @@ body{
                 column-gap: 5px;
                 justify-content: center;
             }
+            &__options-wrapper{
+                display: flex;
+                justify-content: center;
+            }
+            @at-root .game-menu{
+                &__start-btn{
+                    background-color: red;
+                    width: 120px;
+                }
+            }
         }
+    }
+
+    .btn{
+        border-radius: 15px;
+        background-color: $background-gamepanel;
+        color: yellow;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     &__game-panel{

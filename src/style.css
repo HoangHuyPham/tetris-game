@@ -63,6 +63,9 @@ body {
   background-color: rgb(43, 43, 43);
   width: 70%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .game-wrapper__game-screen__game-menu {
   width: 50%;
@@ -77,6 +80,24 @@ body {
   display: flex;
   column-gap: 5px;
   justify-content: center;
+}
+.game-wrapper__game-screen__game-menu__options-wrapper {
+  display: flex;
+  justify-content: center;
+}
+.game-menu__start-btn {
+  background-color: red;
+  width: 120px;
+}
+
+.game-wrapper .btn {
+  border-radius: 15px;
+  background-color: rgb(78, 43, 91);
+  color: yellow;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .game-wrapper__game-panel {
   background-color: rgb(78, 43, 91);
