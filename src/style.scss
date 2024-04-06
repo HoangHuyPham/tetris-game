@@ -1,14 +1,16 @@
 $background-gamescreen: rgb(43, 43, 43);
 $background-gamepanel: rgb(78, 43, 91);
 $menu-color: black;
-$width: 620px;
-$height: 480px;
+$game-width: 620px;
+$game-height: 480px;
+$btn-text-color: yellow;
+$btn-text-color-hover: blue;
 
 $block-width: 150px;
 $block-height: 150px;
 
 body{
-    padding: 10px;
+    padding: 50px;
     background-color: #343434;
     font-family: Tahoma, sans-serif;
 }
@@ -36,43 +38,59 @@ body{
 }
 
 .block1{
-    animation-delay: 1s;
-}
-.block2{
     animation-delay: 1.5s;
 }
-.block3{
+.block2{
     animation-delay: 2s;
 }
-.block4{
+.block3{
     animation-delay: 2.5s;
 }
-.block5{
+.block4{
     animation-delay: 3s;
 }
-.block6{
+.block5{
     animation-delay: 3.5s;
+}
+.block6{
+    animation-delay: 4s;
 }
 /*Kết thúc đoạn*/
 
 .game-wrapper{
     display: flex;
-    width: $width;
-    height: $height;
+    width: $game-width;
+    height: $game-height;
     margin: 0 auto;
     
     &__game-screen{
+        position: relative;
         background-color: $background-gamescreen;
         width: 70%;
         height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 0;
+
+        &__game-canvas{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: $menu-color;
+            z-index: 1;
+        }
+
         &__game-menu{
+            position: relative;
             width: 50%;
-            height: 50%;
+            padding: 10px;
             border-radius: 10px;
             background-color: $menu-color;
+            z-index: 2;
+            
             &__title{
                 font-size: 50px;
                 color: white;
@@ -86,9 +104,10 @@ body{
                 justify-content: center;
             }
             @at-root .game-menu{
+                
                 &__start-btn{
-                    background-color: red;
                     width: 120px;
+                    height: 50px;
                 }
             }
         }
@@ -97,11 +116,15 @@ body{
     .btn{
         border-radius: 15px;
         background-color: $background-gamepanel;
-        color: yellow;
+        color: $btn-text-color;
         cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
+        font-weight: 800;
+        &:hover{
+            color: $btn-text-color-hover; 
+        }
     }
     
     &__game-panel{

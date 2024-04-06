@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="./gamecontroller.js"></script>
     <title>Tetris - game</title>
 </head>
@@ -21,21 +22,23 @@
     <div class="game-wrapper">
         <div class="game-wrapper__game-screen">
             <div class="game-wrapper__game-screen__game-menu">
-                    <div class="game-wrapper__game-screen__game-menu__title">
-                        <span class="red-color">T</span>
-                        <span class="orange-color">E</span>
-                        <span class="yellow-color">T</span>
-                        <span class="green-color">R</span>
-                        <span class="aqua-color">I</span>
-                        <span class="magenta-color">S</span>
+                <div class="game-wrapper__game-screen__game-menu__title">
+                    <span class="red-color">T</span>
+                    <span class="orange-color">E</span>
+                    <span class="yellow-color">T</span>
+                    <span class="green-color">R</span>
+                    <span class="aqua-color">I</span>
+                    <span class="magenta-color">S</span>
+                </div>
+                <div class="game-wrapper__game-screen__game-menu__options-wrapper">
+                    <div onclick="startGame()" class="btn game-menu__start-btn">
+                        Start
                     </div>
-                    <div class="game-wrapper__game-screen__game-menu__options-wrapper">
-                        <div class="btn game-menu__start-btn">
-                            Start
-                        </div>
-                        <!-- /Close tag .game-menu__start-btn -->
-                    </div>
+                    <!-- /Close tag .game-menu__start-btn -->
+                </div> 
             </div>
+            
+            <!-- /Close tag .game-wrapper__game-screen__game-canvas -->
         </div>
         <div class="game-wrapper__game-panel"></div>
     </div>

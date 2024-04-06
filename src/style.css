@@ -1,6 +1,6 @@
 @charset "UTF-8";
 body {
-  padding: 10px;
+  padding: 50px;
   background-color: #343434;
   font-family: Tahoma, sans-serif;
 }
@@ -29,27 +29,27 @@ body {
 }
 
 .block1 {
-  animation-delay: 1s;
-}
-
-.block2 {
   animation-delay: 1.5s;
 }
 
-.block3 {
+.block2 {
   animation-delay: 2s;
 }
 
-.block4 {
+.block3 {
   animation-delay: 2.5s;
 }
 
-.block5 {
+.block4 {
   animation-delay: 3s;
 }
 
-.block6 {
+.block5 {
   animation-delay: 3.5s;
+}
+
+.block6 {
+  animation-delay: 4s;
 }
 
 /*Kết thúc đoạn*/
@@ -60,18 +60,31 @@ body {
   margin: 0 auto;
 }
 .game-wrapper__game-screen {
+  position: relative;
   background-color: rgb(43, 43, 43);
   width: 70%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 0;
+}
+.game-wrapper__game-screen__game-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  z-index: 1;
 }
 .game-wrapper__game-screen__game-menu {
+  position: relative;
   width: 50%;
-  height: 50%;
+  padding: 10px;
   border-radius: 10px;
   background-color: black;
+  z-index: 2;
 }
 .game-wrapper__game-screen__game-menu__title {
   font-size: 50px;
@@ -86,8 +99,8 @@ body {
   justify-content: center;
 }
 .game-menu__start-btn {
-  background-color: red;
   width: 120px;
+  height: 50px;
 }
 
 .game-wrapper .btn {
@@ -98,6 +111,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-weight: 800;
+}
+.game-wrapper .btn:hover {
+  color: blue;
 }
 .game-wrapper__game-panel {
   background-color: rgb(78, 43, 91);
