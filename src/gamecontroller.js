@@ -1,6 +1,6 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
 var startGame;
-var fallingSpeed = 1000; //milisecond
+var fallingSpeed = 0.3; //second
 var game = null
 var keyEvent = null
 
@@ -54,58 +54,63 @@ class Game {
   }
 
   async start(level=1) {
+    let speed = fallingSpeed * 1000 / 3
     switch(level){
       case 1:
         while(!this.isOverGame){
 
           await new Promise(r => setTimeout(()=>{
             this.#insertBrick()
-          }, 1000)).then(()=>{
-            new Promise(r => setTimeout(()=>{
-              this.#fallingBrick()
-            }, 1000)).then(()=>{
-              new Promise(r => setTimeout(()=>{
-                this.#printMatrix()
-              }, 1000))
-            })
-          })
+            r()
+          }, speed))
 
-          
-    
-          console.log(this.isOverGame)
-          
+          await new Promise(r => setTimeout(()=>{
+            this.#printMatrix()
+            r()
+          }, speed))
+
+          await new Promise(r => setTimeout(()=>{
+            this.#fallingBrick()
+            r()
+          }, speed))
         }
-        console.log(this.isOverGame)
+        this.#gameOver()
         break
     }
   }
 
   #insertBrick(brick = new BrickCube()) {
-    console.log("insert...")
     if (this.#currentBrick != null){
-      
-      if (this.isOverGame){
-        this.#gameOver()
-        return
-      }
+      return
     }else{
       this.#currentBrick = brick
+      if (!this.#checkCollide()){
+        this.isOverGame = true
+      }
+        
     }
+    
   }
 
   #gameOver(){
+    this.isOverGame = true
     this.#releaseBrick()
     keyEvent.off()
     console.log("game over")
   }
 
   #fallingBrick() {
-    console.log("falling...")
     if (this.#currentBrick != null){
       if (!this.isOverGame){
-        this.#move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))
+        if(!this.#move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
+          this.#releaseBrick()
+        }
       }
     }
+  }
+
+  cloneMatrix(){
+    return this.#matrix.map(e=>e.slice())
   }
 
 
@@ -116,45 +121,74 @@ class Game {
   //ham nay tra ve false neu khong di chuyen duoc vao vi tri moi (newPosition) hoac khong ton tai this.#currentBrick
   #move(newPosition=this.#currentBrick.currentPos){
     let res = true
-    let tempMatrix = this.#matrix.map(e=>e.slice())
-    let oldX = this.#currentBrick.currentPos.x
-    let oldY = this.#currentBrick.currentPos.y
-
+  
     if (this.#currentBrick == null){
       return false
     }
 
-    //Xoa matrix brick di tren this.#matrix
-    for(let x in this.#currentBrick.getMatrix()){
-      for (let y in this.#currentBrick.getMatrix()[x]){
-        tempMatrix[Number(x)+oldX][Number(y)+oldY] = 0
-      }
-    }
+    let tempMatrix = this.#checkCollide(newPosition)
 
-    if (res = this.#checkCollide(newPosition, tempMatrix)){
+    if (tempMatrix){
       this.#matrix = tempMatrix
+      this.#currentBrick.currentPos = newPosition
+    }else{
+      res = false
     }
-    
 
     return res
   }
 
+  //ham nay kiem tra xem brick co con roi xuong hang cuoi cung chua
+  #checkEndLine(){
+    return this.#currentBrick.currentPos.x + this.#currentBrick.getMatrix().length >= this.#matrix.length
+  }
 
-  #checkCollide(newPosition=this.#currentBrick.currentPos, tempMatrix=[]){
-      let res = true
+  //ham nay se tra 1 tempMatrix neu no ko collide o vi tri moi (newPosition)
+  #checkCollide(newPosition=this.#currentBrick.currentPos){  
+      let tempMatrix = this.cloneMatrix()
+      let oldX = this.#currentBrick.currentPos.x
+      let oldY = this.#currentBrick.currentPos.y
+
+      if (this.#checkEndLine()){
+        return null
+      }   
+
+
+      if (newPosition != this.#currentBrick.currentPos){
+        //Xoa matrix brick di tren tempMatrix
+        for(let x in this.#currentBrick.getMatrix()){
+          for (let y in this.#currentBrick.getMatrix()[x]){
+           tempMatrix[Number(x)+oldX][Number(y)+oldY] = 0
+        }
+      }
+      }
+
       //Thu xem co di chuyen brick qua vi tri moi duoc khong
       for(let x in this.#currentBrick.getMatrix()){
         for (let y in this.#currentBrick.getMatrix()[x]){
           if (tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] == 1){
-            return false
+            return null
+          }else{
+            //neu khong va chham voi brick nao thi no dich chuyen theo vi tri moi cho brick hien tai
+            tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] = 1
           }
         } 
       }
-      return res
+      return tempMatrix
+  }
+
+  #updateCurrentBrick(){
+    if (this.#currentBrick)
+    for(let x in this.#currentBrick.getMatrix()){
+      for (let y in this.#currentBrick.getMatrix()[x]){
+          this.#matrix[Number(x)+this.#currentBrick.currentPos.x][Number(y)+this.#currentBrick.currentPos.y] = 1
+        }
+      } 
   }
 
   #printMatrix(){
     console.clear();
+    this.#updateCurrentBrick()
     let str = "";
     this.#matrix.forEach((e) => {
       e.forEach((e1) => {
