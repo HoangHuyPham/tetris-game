@@ -1,12 +1,13 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
 var startGame;
-var fallingSpeed = 0.2; //second
+var fallingSpeed = 0.18; //second
 var game = null
 var keyEvent = null
 var ctx = null
 var widthCanvas = $(".game-wrapper__game-screen").width()
 var heightCanvas = $(".game-wrapper__game-screen").height()
 var isOverGame = false
+var fallInstant = false
 const Color = {
   BACKGROUND: 0,
   RED: 1,
@@ -52,7 +53,7 @@ $(document).ready(() => {
         break
         case 40: //Phim xuong
           if (game && game.getCurrentBrick()){
-            game.move(new Position(game.getCurrentBrick().currentPos.x+1, game.getCurrentBrick().currentPos.y))
+            fallInstant = true
           }
         break
 
@@ -60,6 +61,7 @@ $(document).ready(() => {
     })
     game = new Game()
     game.start()
+    game.updateScore()
     
   };
 });
@@ -69,12 +71,14 @@ class Game {
   //private
   #matrix = [];
   #currentBrick = null;
+
+  //public
   isOverGame = false
   score = 0
 
   constructor() {
     //Tao 1 ma tran 2 chieu cho game
-    this.#matrix = new Array(sizeOfGame).fill().map(()=> new Array(sizeOfGame).fill(0))
+    this.#matrix = new Array(sizeOfGame*2).fill().map(()=> new Array(sizeOfGame).fill(0))
     this.#currentBrick = null
   }
 
@@ -120,14 +124,19 @@ class Game {
       case Color.PURPLE:
         return "#9520BE"
       case Color.YELLOW:
-        return "#DBFF00"
+        return "#CAE236"
       default:
         return "#000000"
     }
   }
 
+  updateScore(){
+    $('.score__value').get(0).innerHTML = this.score
+  }
+
   draw(){
     if (!this.isOverGame && this.#matrix){
+      this.clearCanvas()
       for (let x =0; x<this.#matrix.length; x++){
         for (let y=0; y<this.#matrix[x].length; y++){
           this.#drawBlock(new Position(x, y), this.#matrix[x][y])
@@ -136,11 +145,12 @@ class Game {
     }
   }
 
-  #drawBlock(position = new Position(0, this.#matrix.length/2-1), color = Color.RED){
-    let width=Math.floor(widthCanvas)/this.#matrix.length
-    let height=Math.floor(heightCanvas)/this.#matrix[0].length
+  #drawBlock(position = new Position(0, Math.floor(this.#matrix.length/2)-1), color = Color.RED){
+    let width=Math.floor(widthCanvas)/this.#matrix[0].length
+    let height=Math.floor(heightCanvas)/this.#matrix.length
     ctx.fillStyle = this.colorToHex(color)
     ctx.strokeStyle = color == Color.BACKGROUND?"#909090":"#f5f5f5"
+    ctx.lineWidth = color == Color.BACKGROUND?1:2
     ctx.fillRect(position.y*width, position.x*height, width, height)
     ctx.strokeRect(position.y*width, position.x*height, width, height)
   }
@@ -149,7 +159,7 @@ class Game {
     ctx.clearRect(0,0, heightCanvas, widthCanvas)
   }
 
-  #insertBrick(brick = this.#randomBrick()) {
+  #insertBrick(brick = new BrickCube()) {
     if (this.#currentBrick != null){
       return
     }else{
@@ -182,9 +192,16 @@ class Game {
 
     if (this.#currentBrick != null){
       if (!this.isOverGame){
+        if (fallInstant){
+          while(this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
+
+          }
+          fallInstant = false
+        }
         if(!this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
           this.#releaseBrick()
-          this.removeLine()
+          //Sau khi giai phong currentBrick moi bat dau xoa dong, tinh diem
+          this.#removeLine()
         }
       }
     }
@@ -298,11 +315,11 @@ class Game {
   }
   
 
-  removeLine(){
+  #removeLine(){
     let tempMatrix = this.cloneMatrix()
     
-      let x = 0, y=0, y1=0
-      for (x in tempMatrix){
+      let y=0, y1=0
+      for (let x = tempMatrix.length-1; x>0; x--){
         let isLine = true
         for (y in tempMatrix[x]){
           if (tempMatrix[x][y]==0 || this.#checkCollide(new Position(x, y))){
@@ -314,13 +331,27 @@ class Game {
           console.log("clear line")
           for (y1 in tempMatrix[x]){
             tempMatrix[x][y1] = 0
-            this.#drawBlock(new Position(x, y1), Color.YELLOW)
             this.score++
           }
+          this.updateScore()
+          this.#dropBrick(tempMatrix, x)
           this.#matrix = tempMatrix
         }
       }
     
+  }
+
+  #dropBrick(tempMatrix = this.#matrix, endX=0){
+    for (let x=endX; x>0; x--){
+      if (endX == tempMatrix.length-1)
+        continue
+      for (let y=0; y<tempMatrix[x].length; y++){
+        if (tempMatrix[x][y] > 0 && tempMatrix[x+1][y]==0){
+          tempMatrix[x+1][y] = tempMatrix[x][y]
+          tempMatrix[x][y] = 0
+        }
+      }
+    }
   }
 
 
@@ -356,7 +387,7 @@ class Game {
   }
 }
 class Position {
-  constructor(x = 0, y = game.getMatrix()[0].length/2-1) {
+  constructor(x = 0, y = Math.floor(game.getMatrix()[0].length/2)-1) {
     this.x = x;
     this.y = y;
   }
@@ -364,7 +395,7 @@ class Position {
 
 class Brick {
   #matrix;
-  constructor(matrix=[], position = new Position(0, game.getMatrix()[0].length/2-1), color=Color.RED) {
+  constructor(matrix=[], position = new Position(0, Math.floor(game.getMatrix()[0].length/2)-1), color=Color.RED) {
     this.#matrix = matrix;
     this.currentPos = position;
     this.color = color

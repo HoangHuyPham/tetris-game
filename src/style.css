@@ -55,7 +55,7 @@ body {
 /*Kết thúc đoạn*/
 .game-wrapper {
   display: flex;
-  width: 620px;
+  width: 450px;
   height: 480px;
   margin: 0 auto;
 }
