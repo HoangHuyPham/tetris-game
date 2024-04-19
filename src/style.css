@@ -71,16 +71,15 @@ body {
 }
 .game-wrapper__game-screen__game-canvas {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
   background-color: black;
   z-index: 1;
 }
+.gameover-menu {
+  color: yellow;
+}
+
 .game-wrapper__game-screen__game-menu {
-  position: relative;
-  width: 50%;
+  position: absolute;
   padding: 10px;
   border-radius: 10px;
   background-color: black;
@@ -120,6 +119,18 @@ body {
   background-color: rgb(78, 43, 91);
   width: 30%;
   height: 100%;
+}
+.game-wrapper__game-panel__content {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+  box-sizing: border-box;
+}
+.game-wrapper__game-panel__score {
+  color: yellow;
+  display: flex;
+  flex-direction: row;
+  font-size: 20px;
 }
 
 .magenta-color {

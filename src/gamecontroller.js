@@ -1,26 +1,43 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
 var startGame;
-var fallingSpeed = 0.5; //second
+var fallingSpeed = 0.2; //second
 var game = null
 var keyEvent = null
 var ctx = null
-
+var widthCanvas = $(".game-wrapper__game-screen").width()
+var heightCanvas = $(".game-wrapper__game-screen").height()
+var isOverGame = false
+const Color = {
+  BACKGROUND: 0,
+  RED: 1,
+  GREEN: 2,
+  AQUA: 3,
+  ORANGE: 4,
+  BLUE: 5,
+  YELLOW: 6,
+  PURPLE: 7,
+}
+const sizeOfGame = 12
 
 $(document).ready(() => {
+  $('.game-wrapper__game-panel__content').hide()
   startGame = function () {
     let gameScreen = $(".game-wrapper__game-screen");
     let gameMenu = $(".game-wrapper__game-screen__game-menu");
     let gameCanvas = $(".game-wrapper__game-screen__game-canvas")
+    widthCanvas = $(".game-wrapper__game-screen").width()
+    heightCanvas = $(".game-wrapper__game-screen").height()
+    isOverGame = false
+    
     ctx = gameCanvas.get(0).getContext("2d")
+   
+    gameCanvas.get(0).width = widthCanvas;
+    gameCanvas.get(0).height = heightCanvas;
 
-    ctx.fillStyle = "red"
-    ctx.fillRect(0, 0, 100, 100)
-
-    gameMenu.attr("hidden", true)
+    gameMenu.hide()
     gameCanvas.removeAttr("hidden")
+    $('.game-wrapper__game-panel__content').show()
 
-    
-    
     keyEvent = $(document).on("keydown", (e)=>{
       switch(e.which){
         case 37: //Phim trai
@@ -43,6 +60,7 @@ $(document).ready(() => {
     })
     game = new Game()
     game.start()
+    
   };
 });
 
@@ -50,23 +68,13 @@ $(document).ready(() => {
 class Game {
   //private
   #matrix = [];
-  #currentBrick = new Brick();
+  #currentBrick = null;
   isOverGame = false
   score = 0
 
   constructor() {
-    this.#matrix = [
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ];
+    //Tao 1 ma tran 2 chieu cho game
+    this.#matrix = new Array(sizeOfGame).fill().map(()=> new Array(sizeOfGame).fill(0))
     this.#currentBrick = null
   }
 
@@ -82,7 +90,8 @@ class Game {
           }, speed))
 
           await new Promise(r => setTimeout(()=>{
-            this.#printMatrix()
+            console.log(this.#printMatrix())
+            this.draw()
             r()
           }, speed))
 
@@ -96,7 +105,51 @@ class Game {
     }
   }
 
-  #insertBrick(brick = new BrickLR()) {
+  colorToHex(color){
+    switch(color){
+      case Color.BLUE:
+        return "#001AFF"
+      case Color.AQUA:
+        return "#00FFFF"
+      case Color.RED:
+        return "#FF0000"
+      case Color.ORANGE:
+        return "#FF8A00"
+      case Color.GREEN:
+        return "#05FF00"
+      case Color.PURPLE:
+        return "#9520BE"
+      case Color.YELLOW:
+        return "#DBFF00"
+      default:
+        return "#000000"
+    }
+  }
+
+  draw(){
+    if (!this.isOverGame && this.#matrix){
+      for (let x =0; x<this.#matrix.length; x++){
+        for (let y=0; y<this.#matrix[x].length; y++){
+          this.#drawBlock(new Position(x, y), this.#matrix[x][y])
+        }
+      }
+    }
+  }
+
+  #drawBlock(position = new Position(0, this.#matrix.length/2-1), color = Color.RED){
+    let width=Math.floor(widthCanvas)/this.#matrix.length
+    let height=Math.floor(heightCanvas)/this.#matrix[0].length
+    ctx.fillStyle = this.colorToHex(color)
+    ctx.strokeStyle = color == Color.BACKGROUND?"#909090":"#f5f5f5"
+    ctx.fillRect(position.y*width, position.x*height, width, height)
+    ctx.strokeRect(position.y*width, position.x*height, width, height)
+  }
+
+  clearCanvas(){
+    ctx.clearRect(0,0, heightCanvas, widthCanvas)
+  }
+
+  #insertBrick(brick = this.#randomBrick()) {
     if (this.#currentBrick != null){
       return
     }else{
@@ -115,12 +168,18 @@ class Game {
 
   #gameOver(){
     this.isOverGame = true
+    isOverGame = true
+    game = null
+    ctx = null
     this.#releaseBrick()
     keyEvent.off()
+    keyEvent = null
     console.log("game over")
+    $('.gameover-menu').show()
   }
 
   #fallingBrick() {
+
     if (this.#currentBrick != null){
       if (!this.isOverGame){
         if(!this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
@@ -189,14 +248,19 @@ class Game {
     
       for(let x in this.#currentBrick.getMatrix()){
         for (let y in this.#currentBrick.getMatrix()[x]){
-          if (tempMatrix)
-          if (tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] == 1){
-            return null
-          }else{
+          if (tempMatrix){
+            
+            if (this.#currentBrick.getMatrix()[Number(x)][Number(y)] > 0){
+              if (tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] > 0){
+                return null
+              }
+            }
             //neu khong va cham voi brick nao thi no dich chuyen theo vi tri moi cho brick hien tai
-            if (this.#currentBrick.getMatrix()[x][y]== 1)
-            tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] = 1
+            if (this.#currentBrick.getMatrix()[x][y] > 0){
+              tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] = this.#currentBrick.getMatrix()[Number(x)][Number(y)]
+            }
           }
+          
         } 
       }
       return tempMatrix
@@ -206,45 +270,37 @@ class Game {
     if (this.#currentBrick)
     for(let x in this.#currentBrick.getMatrix()){
       for (let y in this.#currentBrick.getMatrix()[x]){
-          if (this.#currentBrick.getMatrix()[x][y]== 1)
-          tempMatrix[Number(x)+this.#currentBrick.currentPos.x][Number(y)+this.#currentBrick.currentPos.y] = 1
+          if (this.#currentBrick.getMatrix()[x][y] > 0)
+          tempMatrix[Number(x)+this.#currentBrick.currentPos.x][Number(y)+this.#currentBrick.currentPos.y] =  this.#currentBrick.getMatrix()[x][y]
         }
       } 
+  }
+
+  #randomBrick(){
+    let rd = Math.floor(Math.random() * 10)
+    switch(rd){
+      case 0:
+        return new BrickCube()
+      case 1:
+        return new BrickI()
+      case 2:
+        return new BrickLL()
+      case 3:
+        return new BrickLR()
+      case 4:
+        return new BrickZL()
+      case 5:
+        return new BrickZR()
+      default:
+        return new BrickT()
+    }
+      
   }
   
 
   removeLine(){
     let tempMatrix = this.cloneMatrix()
     
-    if (this.#currentBrick){
-      let x = 0, y=0
-      for (x in tempMatrix){
-        let isLine = true
-        for (y in tempMatrix[x]){
-          if (tempMatrix[x][y]==0 || this.#checkCollide(new Position(x, y))){
-            isLine = false
-            break
-          }
-        }
-        if (isLine){
-          for (y1 in tempMatrix[x]){
-            tempMatrix[x][y1] = 0
-            this.score++
-          }
-          this.#matrix = tempMatrix
-        }
-      }
-
-      // for (x in tempMatrix){
-      //   let isLine = true
-      //   for (y in tempMatrix[x]){
-      //     if (!this.#checkCollide(new Position(x, y))){
-      //       isLine = false
-      //       break
-      //     }
-      //   }
-      // }
-    }else{
       let x = 0, y=0, y1=0
       for (x in tempMatrix){
         let isLine = true
@@ -255,32 +311,19 @@ class Game {
           }
         }
         if (isLine){
-          console.log("its good")
+          console.log("clear line")
           for (y1 in tempMatrix[x]){
             tempMatrix[x][y1] = 0
+            this.#drawBlock(new Position(x, y1), Color.YELLOW)
             this.score++
           }
           this.#matrix = tempMatrix
         }
       }
-    }
+    
   }
 
-  //Ham nay dung de check xem position co trung voi vi tri nao cua currentBrick tren tempMatrix ko
-  #checkCollideWithCurrentBrick(position){
-    let x,y=0
-    if (!this.#currentBrick)
-      return false
-    for(x in this.#currentBrick.getMatrix()){
-      for (y in this.#currentBrick.getMatrix()[x]){
-        if ((x + this.#currentBrick.currentPos.x) == position.x && (y + this.#currentBrick.currentPos.y) == position.y){
-          if (this.#matrix[position.x][position.y] == 1){
-            return true
-          }
-        }
-      }
-    }
-  }
+
 
   removeGhost(tempMatrix = this.#matrix){
     let oldX = this.#currentBrick.currentPos.x
@@ -288,29 +331,32 @@ class Game {
     //Xoa matrix brick di tren tempMatrix
     for(let x in this.#currentBrick.getMatrix()){
       for (let y in this.#currentBrick.getMatrix()[x]){
-       tempMatrix[Number(x)+oldX][Number(y)+oldY] = 0
+        if (this.#currentBrick.getMatrix()[x][y]>0)
+          tempMatrix[Number(x)+oldX][Number(y)+oldY] = 0
       }
     }
 
   }
 
-  #printMatrix(){
+  #printMatrix(tempMatrix = this.#matrix){
     console.clear();
     this.#updateCurrentBrick()
     let str = "";
-    this.#matrix.forEach((e) => {
+    tempMatrix.forEach((e) => {
       e.forEach((e1) => {
         str += e1 + " ";
       });
       str += "\n";
     });
-    console.log(str);
+    return str
   }
 
-  
+  getMatrix(){
+    return this.#matrix
+  }
 }
 class Position {
-  constructor(x = 0, y = 4) {
+  constructor(x = 0, y = game.getMatrix()[0].length/2-1) {
     this.x = x;
     this.y = y;
   }
@@ -318,9 +364,10 @@ class Position {
 
 class Brick {
   #matrix;
-  constructor(matrix=[], position = new Position(0, 4)) {
+  constructor(matrix=[], position = new Position(0, game.getMatrix()[0].length/2-1), color=Color.RED) {
     this.#matrix = matrix;
     this.currentPos = position;
+    this.color = color
   }
   getMatrix() {
     return this.#matrix;
@@ -330,67 +377,73 @@ class Brick {
 class BrickI extends Brick {
   constructor(position) {
     let arr = [[1], [1], [1], [1]];
-    super(arr, position);
+    super(arr, position, Color.AQUA);
   }
 }
 
 class BrickCube extends Brick {
   constructor(position) {
+    let color = Color.YELLOW
     let arr = [
-      [1, 1],
-      [1, 1],
+      [color, color],
+      [color, color],
     ];
-    super(arr, position);
+    super(arr, position, color);
   }
 }
 
 class BrickT extends Brick {
   constructor(position) {
+    let color = Color.PURPLE
     let arr = [
-      [1, 1, 1],
-      [0, 1, 0],
+      [color, color, color],
+      [0, color, 0],
     ];
-    super(arr, position);
+    super(arr, position, color);
   }
 }
 
 class BrickLR extends Brick {
   constructor(position) {
+    let color = Color.ORANGE
     let arr = [
-      [1, 0], 
-      [1, 0], 
-      [1, 1]];
-    super(arr, position);
+      [color, 0], 
+      [color, 0], 
+      [color, color]];
+    super(arr, position, color);
   }
 }
 
 class BrickLL extends Brick {
   constructor(position) {
+    let color = Color.BLUE
     let arr = [
-      [0, 1],
-      [0, 1],
-      [1, 1],
+      [0, color],
+      [0, color],
+      [color, color],
     ];
-    super(arr, position);
+    super(arr, position, color);
   }
 }
 
 class BrickZR extends Brick {
   constructor(position) {
+    let color = Color.GREEN
     let arr = [
-      [0, 1, 1],
-      [1, 1, 0],
+      [0, color, color],
+      [color, color, 0],
     ];
-    super(arr, position);
+    super(arr, position, color);
   }
 }
 
 class BrickZL extends Brick {
   constructor(position) {
+    let color = Color.RED
     let arr = [
-      [1, 1, 0],
-      [0, 1, 1],
+      [color, color, 0],
+      [0, color, color],
     ];
-    super(arr, position);
+    super(arr, position, color);
   }
 }

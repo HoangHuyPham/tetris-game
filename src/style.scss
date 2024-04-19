@@ -76,17 +76,17 @@ body{
 
         &__game-canvas{
             position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
             background-color: $menu-color;
             z-index: 1;
         }
 
+        @at-root .gameover-menu{
+            color: $btn-text-color;
+        }
+
         &__game-menu{
-            position: relative;
-            width: 50%;
+            position: absolute;
+           
             padding: 10px;
             border-radius: 10px;
             background-color: $menu-color;
@@ -129,9 +129,22 @@ body{
     }
     
     &__game-panel{
+        
         background-color: $background-gamepanel;
         width: 30%;
         height: 100%;
+        &__content{
+            display: flex;
+            justify-content: center;
+            padding: 50px;
+            box-sizing: border-box;
+        }
+        &__score{
+            color: $btn-text-color;
+            display: flex;
+            flex-direction: row;
+            font-size: 20px;
+        }
     }
 }
 

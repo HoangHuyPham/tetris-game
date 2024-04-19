@@ -22,6 +22,18 @@
     <div class="block block6"></div>
     <div class="game-wrapper">
         <div class="game-wrapper__game-screen">
+            <div class="game-wrapper__game-screen__game-menu gameover-menu" hidden>
+                <div class="game-wrapper__game-screen__game-menu__title">
+                    GAME OVER
+                </div>
+                <!-- /Close tag .game-wrapper__game-screen__game-menu__title -->
+                <div class="game-wrapper__game-screen__game-menu__options-wrapper">
+                    <div onclick="startGame()" class="btn game-menu__start-btn">
+                        Again
+                    </div>
+                    <!-- /Close tag .game-menu__start-btn -->
+                </div> 
+            </div>
             <div class="game-wrapper__game-screen__game-menu">
                 <div class="game-wrapper__game-screen__game-menu__title">
                     <span class="red-color">T</span>
@@ -38,12 +50,22 @@
                     <!-- /Close tag .game-menu__start-btn -->
                 </div> 
             </div>
-            <canvas id="canvas-g" class="game-wrapper__game-screen__game-canvas" hidden
-                ></canvas>
+            <canvas class="game-wrapper__game-screen__game-canvas"></canvas>
                 <!-- /Close tag .game-wrapper__game-screen__game-canvas -->
             
         </div>
-        <div class="game-wrapper__game-panel"></div>
+        <div class="game-wrapper__game-panel">
+            <div class="game-wrapper__game-panel__content">
+                <div class="game-wrapper__game-panel__score">
+                    <div class="score__label">Score: </div>
+                    <!-- /Close tag .score__label -->
+                    <div class="score__value">0</div>
+                    <!-- /Close tag .score__value -->
+                </div>
+                <!-- /Close tag .game-wrapper__game-panel__score -->
+            </div>
+            <!-- /Close tag .game-panel__content -->
+        </div>
     </div>
 
 </body>
