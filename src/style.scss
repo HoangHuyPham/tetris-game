@@ -132,6 +132,13 @@ body{
         background-color: $background-gamepanel;
         width: 30%;
         height: 100%;
+        &__about-me{
+            position: absolute;
+            display: block;
+            bottom: 0;
+            right: 0;
+            cursor: pointer;
+        }
         &__content{
             position: relative;
             display: flex;

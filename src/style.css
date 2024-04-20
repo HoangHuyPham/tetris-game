@@ -121,6 +121,13 @@ body {
   width: 30%;
   height: 100%;
 }
+.game-wrapper__game-panel__about-me {
+  position: absolute;
+  display: block;
+  bottom: 0;
+  right: 0;
+  cursor: pointer;
+}
 .game-wrapper__game-panel__content {
   position: relative;
   display: flex;

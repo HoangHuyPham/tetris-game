@@ -140,7 +140,9 @@ class Game {
   }
 
   updateGameInfo(){
+    if ($('.score__value').get(0))
     $('.score__value').get(0).innerHTML = this.score
+    if ($('.level__value').get(0))
     $('.level__value').get(0).innerHTML = this.level
   }
 
@@ -357,7 +359,7 @@ class Game {
           for (y in tempMatrix[x]){
             tempMatrix[x][y] = 0
             this.score++
-            await new Promise(r=>setTimeout(r, 20)).then(()=>{ this.drawBlock(ctx, new Position(x,y), Color.RED)})
+            await new Promise(r=>setTimeout(r, 15)).then(()=>{this.drawBlock(ctx, new Position(x,y), Color.RED)})
           }
           this.updateGameInfo()
           this.#dropBrick(tempMatrix, x)
