@@ -2,7 +2,7 @@
 $background-gamescreen: rgb(43, 43, 43);
 $background-gamepanel: rgb(78, 43, 91);
 $menu-color: black;
-$game-width: 450px;
+$game-width: 420px;
 $game-height: 480px;
 $btn-text-color: yellow;
 $btn-text-color-hover: blue;
@@ -11,7 +11,7 @@ $block-width: 150px;
 $block-height: 150px;
 
 body{
-    padding: 50px;
+    padding: 20px;
     background-color: #343434;
     font-family: Tahoma, sans-serif;
 }
@@ -86,14 +86,13 @@ body{
 
         &__game-menu{
             position: absolute;
-           
             padding: 10px;
             border-radius: 10px;
             background-color: $menu-color;
             z-index: 2;
             
             &__title{
-                font-size: 50px;
+                font-size: 40px;
                 color: white;
                 text-align: center;
                 display: flex;
@@ -129,21 +128,30 @@ body{
     }
     
     &__game-panel{
-        
+        position: relative;
         background-color: $background-gamepanel;
         width: 30%;
         height: 100%;
         &__content{
+            position: relative;
             display: flex;
-            justify-content: center;
-            padding: 50px;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 5px;
             box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            row-gap: 15px;
         }
-        &__score{
+        &__score, &__level{
             color: $btn-text-color;
             display: flex;
             flex-direction: row;
             font-size: 20px;
+        }
+        &__next-brick-screen{
+            background-color: $menu-color;
+            
         }
     }
 }

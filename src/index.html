@@ -50,12 +50,20 @@
                     <!-- /Close tag .game-menu__start-btn -->
                 </div> 
             </div>
-            <canvas class="game-wrapper__game-screen__game-canvas"></canvas>
+            
+            <canvas class="game-wrapper__game-screen__game-canvas" hidden></canvas>
                 <!-- /Close tag .game-wrapper__game-screen__game-canvas -->
             
         </div>
         <div class="game-wrapper__game-panel">
             <div class="game-wrapper__game-panel__content">
+                <div class="game-wrapper__game-panel__level">
+                    <div class="level_label">Level: </div>
+                    <!-- /Close tag .level_label -->
+                    <div class="level_value">1</div>
+                    <!-- /Close tag .level_value -->
+                </div>
+                <!-- /Close tag .game-wrapper__game-panel__level -->
                 <div class="game-wrapper__game-panel__score">
                     <div class="score__label">Score: </div>
                     <!-- /Close tag .score__label -->
@@ -63,6 +71,11 @@
                     <!-- /Close tag .score__value -->
                 </div>
                 <!-- /Close tag .game-wrapper__game-panel__score -->
+                <label class="game-wrapper__game-panel__score">Next Brick</label>
+                <canvas class="game-wrapper__game-panel__next-brick-screen" hidden>
+
+                </canvas>
+                <!-- /Close tag .game-wrapper__game-panel__next-brick-screen -->
             </div>
             <!-- /Close tag .game-panel__content -->
         </div>

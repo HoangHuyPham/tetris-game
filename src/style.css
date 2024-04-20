@@ -1,6 +1,6 @@
 @charset "UTF-8";
 body {
-  padding: 50px;
+  padding: 20px;
   background-color: #343434;
   font-family: Tahoma, sans-serif;
 }
@@ -55,7 +55,7 @@ body {
 /*Kết thúc đoạn*/
 .game-wrapper {
   display: flex;
-  width: 450px;
+  width: 420px;
   height: 480px;
   margin: 0 auto;
 }
@@ -86,7 +86,7 @@ body {
   z-index: 2;
 }
 .game-wrapper__game-screen__game-menu__title {
-  font-size: 50px;
+  font-size: 40px;
   color: white;
   text-align: center;
   display: flex;
@@ -116,21 +116,30 @@ body {
   color: blue;
 }
 .game-wrapper__game-panel {
+  position: relative;
   background-color: rgb(78, 43, 91);
   width: 30%;
   height: 100%;
 }
 .game-wrapper__game-panel__content {
+  position: relative;
   display: flex;
-  justify-content: center;
-  padding: 50px;
+  flex-direction: column;
+  align-items: center;
+  padding: 25px 5px;
   box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  row-gap: 15px;
 }
-.game-wrapper__game-panel__score {
+.game-wrapper__game-panel__score, .game-wrapper__game-panel__level {
   color: yellow;
   display: flex;
   flex-direction: row;
   font-size: 20px;
+}
+.game-wrapper__game-panel__next-brick-screen {
+  background-color: black;
 }
 
 .magenta-color {

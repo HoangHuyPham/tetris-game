@@ -1,11 +1,14 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
 var startGame;
-var fallingSpeed = 0.18; //second
+var fallingSpeed = 0.3; //second
 var game = null
 var keyEvent = null
 var ctx = null
-var widthCanvas = $(".game-wrapper__game-screen").width()
-var heightCanvas = $(".game-wrapper__game-screen").height()
+var ctxNextBrick = null
+var widthCanvas = 0
+var heightCanvas = 0
+var widthCanvasNextBrick = 0
+var heightCanvasNextBrick = 0
 var isOverGame = false
 var fallInstant = false
 const Color = {
@@ -19,6 +22,7 @@ const Color = {
   PURPLE: 7,
 }
 const sizeOfGame = 12
+const sizeOfNextScreen = 7
 
 $(document).ready(() => {
   $('.game-wrapper__game-panel__content').hide()
@@ -26,29 +30,44 @@ $(document).ready(() => {
     let gameScreen = $(".game-wrapper__game-screen");
     let gameMenu = $(".game-wrapper__game-screen__game-menu");
     let gameCanvas = $(".game-wrapper__game-screen__game-canvas")
+    let gameCanvasNextBrick = $(".game-wrapper__game-panel__next-brick-screen")
+
     widthCanvas = $(".game-wrapper__game-screen").width()
     heightCanvas = $(".game-wrapper__game-screen").height()
+    widthCanvasNextBrick = $(".game-wrapper__game-panel__content").width()
+    heightCanvasNextBrick = $(".game-wrapper__game-panel__content").height()*0.3
     isOverGame = false
     
     ctx = gameCanvas.get(0).getContext("2d")
+    ctxNextBrick = gameCanvasNextBrick.get(0).getContext("2d")
+
    
     gameCanvas.get(0).width = widthCanvas;
     gameCanvas.get(0).height = heightCanvas;
 
+    gameCanvasNextBrick.get(0).width = widthCanvasNextBrick
+    gameCanvasNextBrick.get(0).height = heightCanvasNextBrick
+  
+  
     gameMenu.hide()
     gameCanvas.removeAttr("hidden")
+    gameCanvasNextBrick.removeAttr("hidden")
     $('.game-wrapper__game-panel__content').show()
+
+    
 
     keyEvent = $(document).on("keydown", (e)=>{
       switch(e.which){
         case 37: //Phim trai
           if (game && game.getCurrentBrick()){
             game.move(new Position(game.getCurrentBrick().currentPos.x, game.getCurrentBrick().currentPos.y-1))
+            game.draw()
           }
         break
         case 39: //Phim phai
           if (game && game.getCurrentBrick()){
             game.move(new Position(game.getCurrentBrick().currentPos.x, game.getCurrentBrick().currentPos.y+1))
+            game.draw()
           }
         break
         case 40: //Phim xuong
@@ -61,7 +80,9 @@ $(document).ready(() => {
     })
     game = new Game()
     game.start()
-    game.updateScore()
+    game.updateGameInfo()
+
+    game.drawBlock(ctxNextBrick, new Position(0,0), Color.AQUA)
     
   };
 });
@@ -71,10 +92,11 @@ class Game {
   //private
   #matrix = [];
   #currentBrick = null;
-
+  #nextBrick = null
   //public
   isOverGame = false
   score = 0
+  level = 0
 
   constructor() {
     //Tao 1 ma tran 2 chieu cho game
@@ -83,26 +105,13 @@ class Game {
   }
 
   async start(level=1) {
-    let speed = fallingSpeed * 1000 / 3
+    let speed = fallingSpeed*1000
     switch(level){
       case 1:
         while(!this.isOverGame){
-
-          await new Promise(r => setTimeout(()=>{
-            this.#insertBrick()
-            r()
-          }, speed))
-
-          await new Promise(r => setTimeout(()=>{
-            console.log(this.#printMatrix())
-            this.draw()
-            r()
-          }, speed))
-
-          await new Promise(r => setTimeout(()=>{
-            this.#fallingBrick()
-            r()
-          }, speed))
+          this.#insertBrick()
+          this.draw()
+          await new Promise(r => setTimeout(()=>{this.#fallingBrick();r()}, speed))
         }
         this.#gameOver()
         break
@@ -130,44 +139,60 @@ class Game {
     }
   }
 
-  updateScore(){
+  updateGameInfo(){
     $('.score__value').get(0).innerHTML = this.score
+    $('.level__value').get(0).innerHTML = this.level
   }
 
   draw(){
+    this.#updateCurrentBrick()
     if (!this.isOverGame && this.#matrix){
-      this.clearCanvas()
+      this.clearCanvas(ctx)
       for (let x =0; x<this.#matrix.length; x++){
         for (let y=0; y<this.#matrix[x].length; y++){
-          this.#drawBlock(new Position(x, y), this.#matrix[x][y])
+          this.drawBlock(ctx, new Position(x, y), this.#matrix[x][y])
         }
       }
+      this.clearCanvas(ctxNextBrick)
+      for (let x =0; x<this.#nextBrick.getMatrix().length; x++){
+        for (let y=0; y<this.#nextBrick.getMatrix()[x].length; y++){
+          if (this.#nextBrick.getMatrix()[x][y]>0)
+          this.drawBlock(ctxNextBrick, new Position(x+2, y+2), this.#nextBrick.getMatrix()[x][y])
+        }
+      }
+      
     }
   }
 
-  #drawBlock(position = new Position(0, Math.floor(this.#matrix.length/2)-1), color = Color.RED){
-    let width=Math.floor(widthCanvas)/this.#matrix[0].length
-    let height=Math.floor(heightCanvas)/this.#matrix.length
-    ctx.fillStyle = this.colorToHex(color)
-    ctx.strokeStyle = color == Color.BACKGROUND?"#909090":"#f5f5f5"
-    ctx.lineWidth = color == Color.BACKGROUND?1:2
-    ctx.fillRect(position.y*width, position.x*height, width, height)
-    ctx.strokeRect(position.y*width, position.x*height, width, height)
+  drawBlock(context = ctx, position = new Position(0, Math.floor(this.#matrix.length/2)-1), color = Color.RED){
+    let width= context == ctx?Math.floor(widthCanvas)/this.#matrix[0].length:Math.floor(widthCanvasNextBrick/sizeOfNextScreen)
+    let height= context == ctx?Math.floor(heightCanvas)/this.#matrix.length:Math.floor(heightCanvasNextBrick/sizeOfNextScreen)
+    context.fillStyle = this.colorToHex(color)
+    context.strokeStyle = color == Color.BACKGROUND?"#909090":"#f5f5f5"
+    context.lineWidth = color == Color.BACKGROUND?1:2
+    context.fillRect(position.y*width, position.x*height, width, height)
+    context.strokeRect(position.y*width, position.x*height, width, height)
   }
 
-  clearCanvas(){
-    ctx.clearRect(0,0, heightCanvas, widthCanvas)
+  clearCanvas(context = ctx){
+    let h = context == ctx? heightCanvas:heightCanvasNextBrick
+    let w = context == ctx? widthCanvas:widthCanvasNextBrick
+    context.clearRect(0,0, h, w)
   }
 
-  #insertBrick(brick = new BrickCube()) {
-    if (this.#currentBrick != null){
+  #insertBrick(brick = this.#currentBrick) {
+    if (!this.#nextBrick){
+      this.#nextBrick = this.#randomBrick()
+      this.#insertBrick()
+    }
+    if (brick){
       return
     }else{
-      this.#currentBrick = brick
+      this.#currentBrick = this.#nextBrick
       if (!this.#checkCollide()){
         this.isOverGame = true
       }
-        
+      this.#nextBrick = this.#randomBrick()
     }
     
   }
@@ -181,6 +206,7 @@ class Game {
     isOverGame = true
     game = null
     ctx = null
+    ctxNextBrick = null
     this.#releaseBrick()
     keyEvent.off()
     keyEvent = null
@@ -189,7 +215,6 @@ class Game {
   }
 
   #fallingBrick() {
-
     if (this.#currentBrick != null){
       if (!this.isOverGame){
         if (fallInstant){
@@ -315,27 +340,29 @@ class Game {
   }
   
 
-  #removeLine(){
+  async #removeLine(){
     let tempMatrix = this.cloneMatrix()
     
       let y=0, y1=0
       for (let x = tempMatrix.length-1; x>0; x--){
         let isLine = true
         for (y in tempMatrix[x]){
-          if (tempMatrix[x][y]==0 || this.#checkCollide(new Position(x, y))){
+          if (tempMatrix[x][y]==0){
             isLine = false
             break
           }
         }
         if (isLine){
           console.log("clear line")
-          for (y1 in tempMatrix[x]){
-            tempMatrix[x][y1] = 0
+          for (y in tempMatrix[x]){
+            tempMatrix[x][y] = 0
             this.score++
+            await new Promise(r=>setTimeout(r, 20)).then(()=>{ this.drawBlock(ctx, new Position(x,y), Color.RED)})
           }
-          this.updateScore()
+          this.updateGameInfo()
           this.#dropBrick(tempMatrix, x)
           this.#matrix = tempMatrix
+          this.#removeLine()
         }
       }
     
@@ -343,8 +370,6 @@ class Game {
 
   #dropBrick(tempMatrix = this.#matrix, endX=0){
     for (let x=endX; x>0; x--){
-      if (endX == tempMatrix.length-1)
-        continue
       for (let y=0; y<tempMatrix[x].length; y++){
         if (tempMatrix[x][y] > 0 && tempMatrix[x+1][y]==0){
           tempMatrix[x+1][y] = tempMatrix[x][y]
@@ -371,7 +396,6 @@ class Game {
 
   #printMatrix(tempMatrix = this.#matrix){
     console.clear();
-    this.#updateCurrentBrick()
     let str = "";
     tempMatrix.forEach((e) => {
       e.forEach((e1) => {
