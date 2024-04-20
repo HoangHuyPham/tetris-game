@@ -28,6 +28,13 @@
                     GAME OVER
                 </div>
                 <!-- /Close tag .game-wrapper__game-screen__game-menu__title -->
+                <div class="game-wrapper__game-screen__game-menu__highest-score">
+                    <label class="highest-score__label">HIGHEST SCORE: </label>
+                    <!-- /Close tag .highest-score__label -->
+                    <label class="highest-score__value">0</label>
+                    <!-- /Close tag .highest-score__value -->
+                </div>
+                <!-- /Close tag .game-wrapper__game-screen__game-menu__highest-score -->
                 <div class="game-wrapper__game-screen__game-menu__options-wrapper">
                     <div onclick="startGame()" class="btn game-menu__start-btn">
                         Again
@@ -35,6 +42,7 @@
                     <!-- /Close tag .game-menu__start-btn -->
                 </div> 
             </div>
+
             <div class="game-wrapper__game-screen__game-menu">
                 <div class="game-wrapper__game-screen__game-menu__title">
                     <span class="red-color">T</span>
@@ -79,17 +87,45 @@
                 <!-- /Close tag .game-wrapper__game-panel__next-brick-screen -->
             </div>
             <!-- /Close tag .game-panel__content -->
-            <button class="game-wrapper__game-panel__about-me">
-                About me
-                <div class="about-me__content">
-                    
-                </div>
-                <!-- /Close tag .about-me__content -->
+            <button onclick="pauseGame()" class="btn game-wrapper__game-panel__pause" style="display: none;">
+                <i class="fa-solid fa-pause"></i>
+                <i class="fa-solid fa-play" style="display: none;"></i>
             </button>
-            <!-- /Close tag .about-me -->
+            <button class="btn game-wrapper__game-panel__about-me">
+                About me
+            </button>
         </div>
     </div>
-
+    <div class="popup-screen" style="display: none;">
+        <div class="about-me__content">
+            <h1>About me</h1>
+            <div class="about-me__content__name">Fullname: Phạm Hoàng Huy</div>
+            <!-- /Close tag .about-me__content__name -->
+            <div class="about-me__content__age">Age: 21</div>
+            <!-- /Close tag .about-me__content__age -->
+            <div class="about-me__content__health">Health: OK</div>
+            <!-- /Close tag .about-me__content__health -->
+            <div class="about-me__content__favourite">Favourite: Cat, Technology, Anime,...</div>
+            <!-- /Close tag .about-me__content__favourite -->
+            <div class="about-me__content__fc">
+                <i class="fa-brands fa-facebook"></i>
+                <a href="https://www.facebook.com/HoanghuyPhamstarder">Facebook</a>
+            </div>
+            <!-- /Close tag .about-me__content__fc -->
+            <div class="about-me__content__github">
+                <i class="fa-brands fa-github"></i>
+                <a href="https://github.com/HoangHuyPham">Github</a>
+            </div>
+            <!-- /Close tag .about-me__content__github -->
+            <button class="about-me__content__close">
+                <i class="fa-regular fa-circle-xmark"></i>
+                Close
+            </button>
+            <!-- /Close tag .about-me__content__close -->
+        </div>
+        <!-- /Close tag .about-me__content -->
+    </div>
+    <!-- /Close tag .popup-screen -->
 </body>
 
 </html>

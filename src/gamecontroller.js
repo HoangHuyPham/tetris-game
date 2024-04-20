@@ -1,4 +1,5 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
+//GLOBAL
 var startGame;
 var fallingSpeed = 0.3; //second
 var game = null
@@ -11,6 +12,7 @@ var widthCanvasNextBrick = 0
 var heightCanvasNextBrick = 0
 var isOverGame = false
 var fallInstant = false
+var isPause = false
 const Color = {
   BACKGROUND: 0,
   RED: 1,
@@ -23,9 +25,19 @@ const Color = {
 }
 const sizeOfGame = 12
 const sizeOfNextScreen = 7
+//
+
 
 $(document).ready(() => {
+  $('.popup-screen').hide()
+  $('.about-me__content__close').on("click", (e)=>{
+    $('.popup-screen').hide()
+  })
+  $('.game-wrapper__game-panel__about-me').on("click", (e)=>{
+    $('.popup-screen').show()
+  })
   $('.game-wrapper__game-panel__content').hide()
+
   startGame = function () {
     let gameScreen = $(".game-wrapper__game-screen");
     let gameMenu = $(".game-wrapper__game-screen__game-menu");
@@ -52,26 +64,26 @@ $(document).ready(() => {
     gameMenu.hide()
     gameCanvas.removeAttr("hidden")
     gameCanvasNextBrick.removeAttr("hidden")
-    $('.game-wrapper__game-panel__content').show()
 
-    
+    $('.game-wrapper__game-panel__pause').show()
+    $('.game-wrapper__game-panel__content').show()
 
     keyEvent = $(document).on("keydown", (e)=>{
       switch(e.which){
         case 37: //Phim trai
-          if (game && game.getCurrentBrick()){
+          if (game && game.getCurrentBrick()&&!isPause){
             game.move(new Position(game.getCurrentBrick().currentPos.x, game.getCurrentBrick().currentPos.y-1))
             game.draw()
           }
         break
         case 39: //Phim phai
-          if (game && game.getCurrentBrick()){
+          if (game && game.getCurrentBrick()&&!isPause){
             game.move(new Position(game.getCurrentBrick().currentPos.x, game.getCurrentBrick().currentPos.y+1))
             game.draw()
           }
         break
         case 40: //Phim xuong
-          if (game && game.getCurrentBrick()){
+          if (game && game.getCurrentBrick()&&!isPause){
             fallInstant = true
           }
         break
@@ -80,11 +92,15 @@ $(document).ready(() => {
     })
     game = new Game()
     game.start()
-    game.updateGameInfo()
-
-    game.drawBlock(ctxNextBrick, new Position(0,0), Color.AQUA)
-    
+    game.updateGamePanel()
   };
+
+  
+  pauseGame = function(){
+    if (game)
+      game.pauseGame()
+  }
+
 });
 
 
@@ -109,9 +125,13 @@ class Game {
     switch(level){
       case 1:
         while(!this.isOverGame){
-          this.#insertBrick()
-          this.draw()
-          await new Promise(r => setTimeout(()=>{this.#fallingBrick();r()}, speed))
+          if (!isPause){
+            this.#insertBrick()
+            this.draw()
+            await new Promise(r => setTimeout(r, speed)).then(()=>{this.#fallingBrick()})
+          }else{
+            await new Promise(r => setTimeout(r, 500))
+          }
         }
         this.#gameOver()
         break
@@ -139,11 +159,22 @@ class Game {
     }
   }
 
-  updateGameInfo(){
+  updateGamePanel(){
     if ($('.score__value').get(0))
     $('.score__value').get(0).innerHTML = this.score
     if ($('.level__value').get(0))
     $('.level__value').get(0).innerHTML = this.level
+  }
+
+  pauseGame(){
+    isPause = !isPause
+    if (isPause){
+      $('.fa-pause').hide()
+      $('.fa-play').show()
+    }else{
+      $('.fa-play').hide()
+      $('.fa-pause').show()
+    }
   }
 
   draw(){
@@ -158,8 +189,9 @@ class Game {
       this.clearCanvas(ctxNextBrick)
       for (let x =0; x<this.#nextBrick.getMatrix().length; x++){
         for (let y=0; y<this.#nextBrick.getMatrix()[x].length; y++){
-          if (this.#nextBrick.getMatrix()[x][y]>0)
-          this.drawBlock(ctxNextBrick, new Position(x+2, y+2), this.#nextBrick.getMatrix()[x][y])
+          if (this.#nextBrick.getMatrix()[x][y]>0){
+             this.drawBlock(ctxNextBrick, new Position(x+2, y+2), this.#nextBrick.getMatrix()[x][y])
+          }
         }
       }
       
@@ -206,6 +238,9 @@ class Game {
   #gameOver(){
     this.isOverGame = true
     isOverGame = true
+    this.#updateHighestScore()
+    if ($('.highest-score__value').get(0))
+    $('.highest-score__value').get(0).innerHTML = localStorage.getItem("highestScore")?localStorage.getItem("highestScore"):this.score
     game = null
     ctx = null
     ctxNextBrick = null
@@ -220,9 +255,8 @@ class Game {
     if (this.#currentBrick != null){
       if (!this.isOverGame){
         if (fallInstant){
-          while(this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
-
-          }
+          while(this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){}
+          this.draw()
           fallInstant = false
         }
         if(!this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){
@@ -310,6 +344,18 @@ class Game {
       return tempMatrix
   }
 
+  #updateHighestScore(){
+    let hScore = null
+    if (hScore= localStorage.getItem("highestScore")){
+      if (hScore < this.score){
+        localStorage.setItem("highestScore", this.score)
+      }
+    }else{
+      localStorage.setItem("highestScore", this.score)
+    }
+  }
+
+  //update ma tran cua currentBrick len tempMatrix
   #updateCurrentBrick(tempMatrix = this.#matrix){
     if (this.#currentBrick)
     for(let x in this.#currentBrick.getMatrix()){
@@ -361,7 +407,7 @@ class Game {
             this.score++
             await new Promise(r=>setTimeout(r, 15)).then(()=>{this.drawBlock(ctx, new Position(x,y), Color.RED)})
           }
-          this.updateGameInfo()
+          this.updateGamePanel()
           this.#dropBrick(tempMatrix, x)
           this.#matrix = tempMatrix
           this.#removeLine()
