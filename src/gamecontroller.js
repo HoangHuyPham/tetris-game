@@ -1,7 +1,25 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
+
+const speedDefault = 0.5 //default: 0.5 (2 khối/s)
+const speedMax = 0.1 //speed toi da khi dat maxSpeedAfter
+const maxSpeedAfter = 5000 // toc do roi dat toi da khi score = maxSpeedAfter
+const Color = {
+  BACKGROUND: 0,
+  RED: 1,
+  GREEN: 2,
+  AQUA: 3,
+  ORANGE: 4,
+  BLUE: 5,
+  YELLOW: 6,
+  PURPLE: 7,
+  BRONZE: 8
+}
+const sizeOfGame = 15
+const sizeOfNextScreen = 7
+
 //GLOBAL
 var startGame;
-var fallingSpeed = 0.5; //second
+var fallingSpeed = speedDefault; 
 var game = null
 var keyEvent = null
 var ctx = null
@@ -14,18 +32,9 @@ var isOverGame = false
 var fallInstant = false
 var isPause = false
 var rotating = false
-const Color = {
-  BACKGROUND: 0,
-  RED: 1,
-  GREEN: 2,
-  AQUA: 3,
-  ORANGE: 4,
-  BLUE: 5,
-  YELLOW: 6,
-  PURPLE: 7,
-}
-const sizeOfGame = 12
-const sizeOfNextScreen = 7
+var chanceToBronze = 0.2  //Ty le 1 khoi spawn xuat hien bronze (o level 2)
+
+
 //
 
 
@@ -65,8 +74,21 @@ $(document).ready(() => {
     gameCanvas.removeAttr("hidden")
     gameCanvasNextBrick.removeAttr("hidden")
 
+    $('.game-wrapper__game-panel__change-level').show()
     $('.game-wrapper__game-panel__pause').show()
     $('.game-wrapper__game-panel__content').show()
+
+
+    changeLevel = function(){
+      if (game){
+        game.pauseGame(true)
+        let lv = prompt("Level muốn đổi: ")
+        game.level = Number(lv)
+        game.pauseGame()
+        game.updateGamePanel()
+      }
+    }
+
 
     keyEvent = $(document).on("keydown", (e)=>{
       switch(e.which){
@@ -99,7 +121,10 @@ $(document).ready(() => {
     game = new Game()
     game.start()
     game.updateGamePanel()
+  
   };
+
+  
 
   
   pauseGame = function(pause){
@@ -118,7 +143,7 @@ class Game {
   //public
   isOverGame = false
   score = 0
-  level = 0
+  level = 1
 
   constructor() {
     //Tao 1 ma tran 2 chieu cho game
@@ -126,20 +151,62 @@ class Game {
     this.#currentBrick = null
   }
 
-  async start(level=1) {
-    let speed = fallingSpeed*1000
-    switch(level){
-      case 1:
-        while(!this.isOverGame){
-          if (!isPause){
-            this.#insertBrick()
-            this.draw()
-            await new Promise(r => setTimeout(r, speed)).then(()=>{this.#fallingBrick()})
-          }else{
-            await new Promise(r => setTimeout(r, 500))
+  #updateGameSpeed(){
+
+    if (!isOverGame && game){
+      if (this.score <= maxSpeedAfter){
+        fallingSpeed = speedDefault - ((speedDefault - speedMax)/maxSpeedAfter*this.score)
+      }
+      if (this.score >= 1000 && this.level < 2)
+        this.level = 2
+    }
+    
+  }
+
+  #turnBrickTo(brick){
+    if (this.level >= 2){
+      for (let x in brick.getMatrix()){
+        for (let y in brick.getMatrix()[x]){
+          if (brick.getMatrix()[Number(x)][Number(y)]>0){
+            
+              if (Math.floor(Math.random() * 10) > (10 - chanceToBronze*10 - 1)){  
+                brick.getMatrix()[Number(x)][Number(y)] = Color.BRONZE
+              }
           }
         }
-        this.#gameOver()
+      }
+    }else{
+      return brick
+    }
+    return brick
+  }
+
+  async #runLoop(){
+    while(!this.isOverGame){
+      let speed = fallingSpeed*1000
+      if (!isPause){
+        this.#insertBrick()
+        this.draw()
+        await new Promise(r => setTimeout(r, speed)).then(()=>{this.#fallingBrick()})
+        .then(()=>this.#updateGameSpeed())
+        .then(()=>this.updateGamePanel())
+      }else{
+        await new Promise(r => setTimeout(r, 500))
+      }
+    }
+    this.#gameOver()
+  }
+
+  start(level=1) {
+    
+    switch(level){
+      case 1:
+        this.level = 1
+        this.#runLoop()
+        break
+      case 2:
+        this.level = 2
+        this.#runLoop()
         break
     }
   }
@@ -160,6 +227,8 @@ class Game {
         return "#9520BE"
       case Color.YELLOW:
         return "#CAE236"
+      case Color.BRONZE:
+        return "#d46d44"
       default:
         return "#000000"
     }
@@ -168,8 +237,10 @@ class Game {
   updateGamePanel(){
     if ($('.score__value').get(0))
     $('.score__value').get(0).innerHTML = this.score
-    if ($('.level__value').get(0))
-    $('.level__value').get(0).innerHTML = this.level
+    if ($('.level_value').get(0))
+    $('.level_value').get(0).innerHTML = this.level
+    if ($('.speed__value').get(0))
+    $('.speed__value').get(0).innerHTML = Math.floor(1 / fallingSpeed * 100)/100
   }
 
   pauseGame(forcePause){
@@ -263,8 +334,8 @@ class Game {
     let width= context == ctx?Math.floor(widthCanvas)/this.#matrix[0].length:Math.floor(widthCanvasNextBrick/sizeOfNextScreen)
     let height= context == ctx?Math.floor(heightCanvas)/this.#matrix.length:Math.floor(heightCanvasNextBrick/sizeOfNextScreen)
     context.fillStyle = this.colorToHex(color)
-    context.strokeStyle = color == Color.BACKGROUND?"#909090":"#f5f5f5"
-    context.lineWidth = color == Color.BACKGROUND?1:2
+    context.strokeStyle = color == Color.BACKGROUND?"#909090": color == Color.BRONZE?"#eb1059": "#f5f5f5"
+    context.lineWidth = color == Color.BACKGROUND?1:color == Color.BRONZE?2:2
     context.fillRect(position.y*width, position.x*height, width, height)
     context.strokeRect(position.y*width, position.x*height, width, height)
   }
@@ -296,20 +367,24 @@ class Game {
     return this.#currentBrick
   }
 
-  #gameOver(){
+  #gameOver(showPopup=true){
     this.isOverGame = true
     isOverGame = true
     this.#updateHighestScore()
-    if ($('.highest-score__value').get(0))
-    $('.highest-score__value').get(0).innerHTML = localStorage.getItem("highestScore")?localStorage.getItem("highestScore"):this.score
+    fallingSpeed = speedDefault
     game = null
     ctx = null
     ctxNextBrick = null
     this.#releaseBrick()
     keyEvent.off()
     keyEvent = null
-    console.log("game over")
-    $('.gameover-menu').show()
+
+    if (showPopup){
+      if ($('.highest-score__value').get(0))
+      $('.highest-score__value').get(0).innerHTML = localStorage.getItem("highestScore")?localStorage.getItem("highestScore"):this.score
+      $('.gameover-menu').show()
+    }
+
   }
 
   #fallingBrick() {
@@ -335,7 +410,6 @@ class Game {
 
 
   #releaseBrick() {
-    console.log("just release")
     this.#currentBrick = null;
   }
 
@@ -434,19 +508,19 @@ class Game {
     let rd = Math.floor(Math.random() * 10)
     switch(rd){
       case 0:
-        return new BrickCube()
+        return this.#turnBrickTo(new BrickCube())
       case 1:
-        return new BrickI()
+        return this.#turnBrickTo(new BrickI())
       case 2:
-        return new BrickLL()
+        return this.#turnBrickTo(new BrickLL())
       case 3:
-        return new BrickLR()
+        return this.#turnBrickTo(new BrickLR())
       case 4:
-        return new BrickZL()
+        return this.#turnBrickTo(new BrickZL())
       case 5:
-        return new BrickZR()
+        return this.#turnBrickTo(new BrickZR())
       default:
-        return new BrickT()
+        return this.#turnBrickTo(new BrickT())
     }
       
   }
@@ -467,14 +541,34 @@ class Game {
         }
         if (isLine){
           rotating = true
-          console.log("clear line")
-          
+
           for (y in tempMatrix[x]){
-            tempMatrix[x][y] = 0
+            await new Promise(r=>setTimeout(r, 50)).then(()=>{
+              if (tempMatrix[x][y] == Color.BRONZE){
+                //Neu day la khoi bronze, se co hieu ung mau xanh khi quet line so voi khoi thuong
+                this.drawBlock(ctx, new Position(x,y), Color.BLUE)
+              }else{
+                this.drawBlock(ctx, new Position(x,y), Color.RED)
+              }
+            
+            })
+
+            if (this.level >= 2){
+              //doan nay giup block broze ko bi xoa sau khi quet line
+              if (tempMatrix[x][y] == Color.BRONZE){
+                let rd =  Math.floor(Math.random() * 7) + 1 // doan nay de random tu 1-7
+                tempMatrix[x][y] = rd
+              }else{
+                tempMatrix[x][y] = 0
+              }
+            }else{
+              tempMatrix[x][y] = 0
+            }
+            
             this.score++
-            await new Promise(r=>setTimeout(r, 15)).then(()=>{this.drawBlock(ctx, new Position(x,y), Color.RED)})
+            
           }
-          
+
           this.updateGamePanel()
           this.#dropBrick(tempMatrix, x)
           this.#matrix = tempMatrix
@@ -490,6 +584,8 @@ class Game {
       return
     for (let x=endX; x>0; x--){
       for (let y=0; y<tempMatrix[x].length; y++){
+        if (x+1 >= tempMatrix.length)
+          continue
         if (tempMatrix[x][y] > 0 && tempMatrix[x+1][y]==0){
           for (let x1=x; x1<tempMatrix.length; x1++){
             if (x1==tempMatrix.length-1)

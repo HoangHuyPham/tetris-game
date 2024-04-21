@@ -85,8 +85,18 @@
 
                 </canvas>
                 <!-- /Close tag .game-wrapper__game-panel__next-brick-screen -->
+                <div class="game-wrapper__game-panel__speed">
+                    <div class="game-wrapper__game-panel__score speed__label">Speed: </div>
+                    <!-- /Close tag .speed__label -->
+                    <div class="speed__value">0</div>
+                    <!-- /Close tag .speed__value -->
+                </div>
+                <!-- /Close tag .game-wrapper__game-panel__speed -->
             </div>
             <!-- /Close tag .game-panel__content -->
+            <button onclick="changeLevel()" class="btn game-wrapper__game-panel__change-level" style="display: none;">
+                Change Level
+            </button>
             <button onclick="pauseGame()" class="btn game-wrapper__game-panel__pause" style="display: none;">
                 <i class="fa-solid fa-pause"></i>
                 <i class="fa-solid fa-play" style="display: none;"></i>

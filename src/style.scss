@@ -157,10 +157,17 @@ body{
             right: 0;
             cursor: pointer;
         }
+        &__change-level{
+            position: absolute;
+            display: block;
+            bottom: 50px;
+            right: 0;
+            cursor: pointer
+        }
         &__pause{
             position: absolute;
             display: block;
-            bottom: 30px;
+            bottom: 25px;
             right: 0;
             cursor: pointer
         }
@@ -175,7 +182,7 @@ body{
             height: 100%;
             row-gap: 15px;
         }
-        &__score, &__level{
+        &__score, &__level, &__speed{
             color: $btn-text-color;
             display: flex;
             flex-direction: row;

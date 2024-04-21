@@ -145,10 +145,17 @@ body {
   right: 0;
   cursor: pointer;
 }
+.game-wrapper__game-panel__change-level {
+  position: absolute;
+  display: block;
+  bottom: 50px;
+  right: 0;
+  cursor: pointer;
+}
 .game-wrapper__game-panel__pause {
   position: absolute;
   display: block;
-  bottom: 30px;
+  bottom: 25px;
   right: 0;
   cursor: pointer;
 }
@@ -163,7 +170,7 @@ body {
   height: 100%;
   row-gap: 15px;
 }
-.game-wrapper__game-panel__score, .game-wrapper__game-panel__level {
+.game-wrapper__game-panel__score, .game-wrapper__game-panel__level, .game-wrapper__game-panel__speed {
   color: yellow;
   display: flex;
   flex-direction: row;
