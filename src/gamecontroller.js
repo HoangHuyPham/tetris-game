@@ -1,7 +1,7 @@
 // 21130385_PhamHoangHuy_0774073023_DH21DTB
 //GLOBAL
 var startGame;
-var fallingSpeed = 0.3; //second
+var fallingSpeed = 0.5; //second
 var game = null
 var keyEvent = null
 var ctx = null
@@ -13,6 +13,7 @@ var heightCanvasNextBrick = 0
 var isOverGame = false
 var fallInstant = false
 var isPause = false
+var rotating = false
 const Color = {
   BACKGROUND: 0,
   RED: 1,
@@ -36,7 +37,6 @@ $(document).ready(() => {
   $('.game-wrapper__game-panel__about-me').on("click", (e)=>{
     $('.popup-screen').show()
   })
-  $('.game-wrapper__game-panel__content').hide()
 
   startGame = function () {
     let gameScreen = $(".game-wrapper__game-screen");
@@ -76,6 +76,12 @@ $(document).ready(() => {
             game.draw()
           }
         break
+        case 38: //Phim len
+          if (game && game.getCurrentBrick()&&!isPause){
+            game.rotateBrick(game.getCurrentBrick())
+            game.draw()
+          }
+        break
         case 39: //Phim phai
           if (game && game.getCurrentBrick()&&!isPause){
             game.move(new Position(game.getCurrentBrick().currentPos.x, game.getCurrentBrick().currentPos.y+1))
@@ -96,9 +102,9 @@ $(document).ready(() => {
   };
 
   
-  pauseGame = function(){
+  pauseGame = function(pause){
     if (game)
-      game.pauseGame()
+      game.pauseGame(pause)
   }
 
 });
@@ -166,8 +172,12 @@ class Game {
     $('.level__value').get(0).innerHTML = this.level
   }
 
-  pauseGame(){
+  pauseGame(forcePause){
+    if (!game)
+      return
     isPause = !isPause
+    if (forcePause)
+      isPause = true
     if (isPause){
       $('.fa-pause').hide()
       $('.fa-play').show()
@@ -175,6 +185,57 @@ class Game {
       $('.fa-play').hide()
       $('.fa-pause').show()
     }
+  }
+
+
+  rotateBrick(brick=this.#currentBrick){
+    rotating = true
+    let tempMatrix = Game.cloneMatrix(this.#matrix)
+    let brickMatrix = brick.getMatrix()
+    let brickClone = brick.clone()
+
+    let brickMatrixRes = new Array(brickMatrix[0].length).fill().map(e=>new Array(brickMatrix.length).fill())
+
+
+    //Doan nay dung de xoay ma tran cua bien brick
+    for(let x=0;x<brickMatrix[0].length; x++){
+      for (let y=0; y<brickMatrix.length; y++){
+        brickMatrixRes[x][y] = brickMatrix[y][brickMatrix[0].length- x-1]
+      }
+    }
+    //
+
+    brickClone.setMatrix(brickMatrixRes)
+    if (!this.#checkCollideRotate(tempMatrix, brickClone)|| this.#checkEndLine(brickClone.currentPos, brickClone)){
+      rotating = false
+      return
+    }
+
+    this.#matrix = tempMatrix
+    this.#currentBrick = brickClone
+    
+
+    rotating = false
+    return brick
+  }
+
+
+  #checkCollideRotate(tempMatrix, tempBrick){
+    let res = true
+    if (tempMatrix && tempBrick){
+      let tempPos = tempBrick.currentPos
+      this.removeGhost(tempMatrix, this.#currentBrick)
+      for (let x in tempBrick.getMatrix()){
+        for (let y in tempBrick.getMatrix()[x]){
+          if (tempBrick.getMatrix()[x][y] > 0){
+            if (tempMatrix[Number(x)+tempPos.x][Number(y)+tempPos.y] > 0){
+              return false
+            }
+          }
+        }
+      }
+    }
+    return res
   }
 
   draw(){
@@ -252,7 +313,7 @@ class Game {
   }
 
   #fallingBrick() {
-    if (this.#currentBrick != null){
+    if (this.#currentBrick != null && !rotating){
       if (!this.isOverGame){
         if (fallInstant){
           while(this.move(new Position(this.#currentBrick.currentPos.x+1, this.#currentBrick.currentPos.y))){}
@@ -268,8 +329,8 @@ class Game {
     }
   }
 
-  cloneMatrix(){
-    return this.#matrix.map(e=>e.slice())
+  static cloneMatrix(matrix){
+    return matrix.map(e=>e.slice())
   }
 
 
@@ -299,17 +360,18 @@ class Game {
   }
 
   //ham nay kiem tra xem brick co con roi xuong hang cuoi cung chua
-  #checkEndLine(newPosition=this.#currentBrick.currentPos){
+  #checkEndLine(newPosition=this.#currentBrick.currentPos, tempBrick=this.#currentBrick){
     if (!this.#currentBrick)
       return true
-    return newPosition.x + this.#currentBrick.getMatrix().length > this.#matrix.length ||
-    newPosition.y + this.#currentBrick.getMatrix()[0].length > this.#matrix[0].length ||
+    return newPosition.x + tempBrick.getMatrix().length > this.#matrix.length ||
+    newPosition.y + tempBrick.getMatrix()[0].length > this.#matrix[0].length ||
     newPosition.y < 0
   }
 
   //ham nay se tra 1 tempMatrix neu no ko collide o vi tri moi (newPosition)
-  #checkCollide(newPosition=this.#currentBrick.currentPos){  
-      let tempMatrix = this.cloneMatrix()
+  #checkCollide(newPosition=this.#currentBrick.currentPos, tempMatrix, tempBrick){  
+      if (!tempMatrix)
+        tempMatrix = Game.cloneMatrix(this.#matrix)
       
       if (this.#checkEndLine(newPosition)){
         return null
@@ -318,24 +380,26 @@ class Game {
 
       //Xoa di brick current matrix
       if (newPosition != this.#currentBrick.currentPos){
-        this.removeGhost(tempMatrix)
+          this.removeGhost(tempMatrix, tempBrick)
       }
 
 
       //Thu xem co di chuyen brick qua vi tri moi duoc khong
+      if (!tempBrick)
+        tempBrick = this.#currentBrick
     
-      for(let x in this.#currentBrick.getMatrix()){
-        for (let y in this.#currentBrick.getMatrix()[x]){
+      for(let x in tempBrick.getMatrix()){
+        for (let y in tempBrick.getMatrix()[x]){
           if (tempMatrix){
-            
-            if (this.#currentBrick.getMatrix()[Number(x)][Number(y)] > 0){
+           
+            if (tempBrick.getMatrix()[Number(x)][Number(y)] > 0){
               if (tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] > 0){
                 return null
               }
             }
             //neu khong va cham voi brick nao thi no dich chuyen theo vi tri moi cho brick hien tai
-            if (this.#currentBrick.getMatrix()[x][y] > 0){
-              tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] = this.#currentBrick.getMatrix()[Number(x)][Number(y)]
+            if (tempBrick.getMatrix()[x][y] > 0){
+              tempMatrix[Number(x)+newPosition.x][Number(y)+newPosition.y] = tempBrick.getMatrix()[Number(x)][Number(y)]
             }
           }
           
@@ -389,8 +453,9 @@ class Game {
   
 
   async #removeLine(){
-    let tempMatrix = this.cloneMatrix()
-    
+    if (!game || isOverGame) return
+    let tempMatrix = Game.cloneMatrix(this.#matrix)
+
       let y=0, y1=0
       for (let x = tempMatrix.length-1; x>0; x--){
         let isLine = true
@@ -401,42 +466,61 @@ class Game {
           }
         }
         if (isLine){
+          rotating = true
           console.log("clear line")
+          
           for (y in tempMatrix[x]){
             tempMatrix[x][y] = 0
             this.score++
             await new Promise(r=>setTimeout(r, 15)).then(()=>{this.drawBlock(ctx, new Position(x,y), Color.RED)})
           }
+          
           this.updateGamePanel()
           this.#dropBrick(tempMatrix, x)
           this.#matrix = tempMatrix
+          this.draw()
           this.#removeLine()
         }
       }
-    
+      
   }
 
   #dropBrick(tempMatrix = this.#matrix, endX=0){
+    if (!tempMatrix)
+      return
     for (let x=endX; x>0; x--){
       for (let y=0; y<tempMatrix[x].length; y++){
         if (tempMatrix[x][y] > 0 && tempMatrix[x+1][y]==0){
-          tempMatrix[x+1][y] = tempMatrix[x][y]
-          tempMatrix[x][y] = 0
+          for (let x1=x; x1<tempMatrix.length; x1++){
+            if (x1==tempMatrix.length-1)
+              break
+            if (tempMatrix[x1+1][y] == 0){
+              tempMatrix[x1+1][y] = tempMatrix[x1][y]
+              tempMatrix[x1][y] = 0
+            }else{
+              break
+            }
+          }
         }
       }
     }
+    rotating = false
   }
 
 
 
-  removeGhost(tempMatrix = this.#matrix){
-    let oldX = this.#currentBrick.currentPos.x
-    let oldY = this.#currentBrick.currentPos.y
+  removeGhost(tempMatrix = this.#matrix, tempBrick= this.#currentBrick){
     //Xoa matrix brick di tren tempMatrix
-    for(let x in this.#currentBrick.getMatrix()){
-      for (let y in this.#currentBrick.getMatrix()[x]){
-        if (this.#currentBrick.getMatrix()[x][y]>0)
+    if (!tempBrick)
+      return
+      let oldX = tempBrick.currentPos.x
+      let oldY = tempBrick.currentPos.y
+
+    for(let x in tempBrick.getMatrix()){
+      for (let y in tempBrick.getMatrix()[x]){
+        if (tempBrick.getMatrix()[x][y]>0){
           tempMatrix[Number(x)+oldX][Number(y)+oldY] = 0
+        }
       }
     }
 
@@ -472,8 +556,15 @@ class Brick {
     this.currentPos = position;
     this.color = color
   }
+
   getMatrix() {
     return this.#matrix;
+  }
+  setMatrix(matrix){
+    this.#matrix = matrix
+  }
+  clone(){
+    return new Brick(Game.cloneMatrix(this.getMatrix()), new Position(this.currentPos.x, this.currentPos.y), this.color)
   }
 }
 
